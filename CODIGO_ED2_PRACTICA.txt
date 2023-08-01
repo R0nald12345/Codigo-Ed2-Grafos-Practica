@@ -1,0 +1,440 @@
+/**************************** N  O  D  O *******************************/
+public class Nodo {
+
+    public String nombre;
+    public Nodo prox;
+
+    public Arco primA;
+    public Arco ultA;
+
+    public Nodo(String nombre, Nodo prox) {
+        this.nombre = nombre;
+        this.prox = prox;
+        this.primA = null;
+        this.ultA = null;
+    }
+
+    public void insertarNuevoArco(int valor, Nodo pDestino, Arco prox) {
+        if (verificarVacio()) {
+            primA = ultA = new Arco(valor, pDestino, prox);
+        } else {
+            Arco nuevoA = new Arco(valor, pDestino, prox);
+            ultA.prox = nuevoA;
+            ultA = nuevoA;
+        }
+
+    }
+
+    ///---------------------------------
+    public boolean verificarVacio() {
+        return (this.primA == null && this.ultA == null);
+    }
+    ///---------------------------------
+    
+    public String toString(){
+        return this.nombre;
+    }
+}
+
+/***************************  A  R  C  O  ************************************************/
+public class Arco {
+
+    public int valor;
+    public Nodo pDestino;
+    public Arco prox;
+
+    public Arco(int valor, Nodo pDestino, Arco prox) {
+        this.valor = valor;
+        this.pDestino = pDestino;
+        this.prox = prox;
+    }
+}
+/****************************C  O N S  U  L  T  A S*********************************/
+public class Grafo {
+
+    public Nodo prim;
+    public Nodo ult;
+    public int cantNodos;
+    
+    //para la cantidad de Arcos;
+    public int cantArco;
+    
+    public Grafo() {
+        this.prim = this.ult = null;
+        this.cantNodos = 0;
+        this.cantArco= 0;
+    }
+
+    //1. G1.insertarNodo(name) : Método que insertar un nodo en el grafo G1, con rótulo name.
+    public void insertarNodo(String nombre) {
+        if (this.seEncuentra(nombre)) {
+            return;
+        }
+        if (this.isVacia()) {
+            this.prim = this.ult = new Nodo(nombre, null);
+        } else {
+            Nodo nuevo = new Nodo(nombre, null);
+            ult.prox = nuevo;
+            ult = nuevo;
+        }
+        this.cantNodos++;
+    }
+
+    //2. G1.insertarArco(name1, name2, valor): Método que inserta un arco en el grafo G1, 
+    //desde el nodo name1 hasta name2 con un peso del arco igual a valor.
+    public void insertarArco(String name1, String name2, int valor) {
+        Nodo pOrigen = buscarNodo(name1);
+        Nodo pDestino = buscarNodo(name2);
+        if (pOrigen == null || pDestino == null) {
+            return;
+        }
+        pOrigen.insertarNuevoArco(valor, pDestino, null);
+        this.cantArco++;
+    }
+
+    //3. G1.mostrarGrafo(): Método que muestra un grafo. Muestra la lista de nodos, 
+    //para cada nodo la lista de arcos con sus nodos destinos y sus respectivos valores.
+    public void mostrarGrafo() {
+        Nodo Nodop = this.prim;
+        while (Nodop != null) {
+            System.out.print("Nodo: " + Nodop.nombre + "-> ");
+
+            Arco auxArco = Nodop.primA;
+            while (auxArco != null) {
+                System.out.print(auxArco.pDestino.nombre + "," + auxArco.valor + "; ");
+                auxArco = auxArco.prox;
+            }
+            System.out.println("");
+            Nodop = Nodop.prox;
+        }
+    }
+
+    //4. G1.cantidadArcos() : Método que devuelve la cantidad de arcos que contiene el grafo G1.
+    public int obtenerCantidadArco(){
+        return this.cantArco;
+    }
+    
+    //5. G1.mayorValor() : Método que devuelve el mayor valor de los arcos del grafo G1.
+    public int mayorValorArco(){
+        Nodo aux = prim;
+        Arco auxA;
+        int mayor,nMayor;
+        mayor = 0;
+        while(aux!= null){
+            auxA = aux.primA;
+            while(auxA != null){
+                nMayor = auxA.valor;
+                if(nMayor>mayor){
+                    mayor = nMayor;
+                }
+                auxA = auxA.prox;
+            }
+            aux = aux.prox;
+        }
+        return mayor ;
+    }
+    
+     //6. G1.menorValor() : Método que devuelve el menor valor de los arcos del grafo G1.
+    public int menorValorArco(){
+        Nodo aux = prim;
+        Arco auxA;
+        int mayor,nMayor;
+        mayor = 0;
+        while(aux!= null){
+            auxA = aux.primA;
+            while(auxA != null){
+                nMayor = auxA.valor;
+                if(nMayor<mayor){
+                    mayor = nMayor;
+                }
+                auxA = auxA.prox;
+            }
+            aux = aux.prox;
+        }
+        return mayor ;
+    }
+
+    
+    
+    //7Para obtener la cantidad de Nodos
+    public int obtenerCantidadNodo(){
+        return this.cantNodos;
+    }
+    
+    
+     // 8. G1.mostrarNodosIslas(): Método que muestra los nodos islas.
+    // Nodos islas son aquellos nodos que no tienen arcos que salen de él, ni arcos que llegan a él.
+    public void mostrarNodosIslas() {
+        Nodo nodoActual = prim;
+        while (nodoActual != null) {
+            // Verificar si el nodoActual es una isla (no tiene arcos que salen ni arcos que llegan a él).
+            if (nodoActual.primA == null && !existeArcoLlegada(nodoActual)) {
+                System.out.println(nodoActual.nombre);
+            }
+            nodoActual = nodoActual.prox;
+        }
+    }
+
+    // Método auxiliar para verificar si existe algún arco que llega al nodo actual.
+    private boolean existeArcoLlegada(Nodo nodo) {
+        Nodo nodoActual = prim;
+        while (nodoActual != null) {
+            Arco arcoActual = nodoActual.primA;
+            while (arcoActual != null) {
+                if (arcoActual.pDestino == nodo) {
+                    return true;
+                }
+                arcoActual = arcoActual.prox;
+            }
+            nodoActual = nodoActual.prox;
+        }
+        return false;
+    }
+    //-------------------------------
+    //Metodos adicionales
+    public boolean seEncuentra(String nombre) {
+        Nodo aux = prim;
+        while (aux != null) {
+            if (aux.nombre.equals(nombre)) {
+                return true;
+            }
+            aux = aux.prox;
+        }
+        return false;
+    }
+
+    public boolean isVacia() {
+        return (this.prim == null && ult == null);
+    }
+
+    public Nodo buscarNodo(String nombre) {
+        Nodo aux = prim;
+        while (aux != null) {
+            if (aux.nombre.equals(nombre)) {
+                return aux;
+            }
+            aux = aux.prox;
+        }
+        return null;
+    }
+    
+    
+    
+
+    //---------------------------------
+    // B  A  C  K  T  R  A  C  K  I  N  G
+    public void mostrarCamino(String name1, String name2) {
+        Nodo pOrigen = buscarNodo(name1);
+        Nodo pDestino = buscarNodo(name2);
+        if (pOrigen == null || pDestino == null) {
+            return;
+        }
+        LinkedList<Nodo> L1 = new LinkedList();
+        L1.add(pOrigen);
+        mostrarCamino(L1, pOrigen, pDestino);
+    }
+
+    public void mostrarCamino(LinkedList<Nodo> L1, Nodo pOrigen, Nodo pDestino) {
+        if (seEncuentra(L1, pOrigen)) { 
+            return;
+        }
+        if (pOrigen == pDestino) { 
+            System.out.println(L1.toString());
+            return;
+        }
+        Arco p = pOrigen.primA;
+        while (p != null) {
+            L1.add(p.pDestino);
+            mostrarCamino(L1, p.pDestino, pDestino);
+            L1.removeLast();
+            p = p.prox;
+        }
+
+    }
+
+    //
+//    2. G1.cantidadCaminos(name1, name2) : Método que devuelve la cantidad de caminos que existen 
+//    desde el nodo name1 hasta name2.
+    public int cantidadCaminos(String name1, String name2) {
+        Nodo pOrigen = buscarNodo(name1);
+        Nodo pDestino = buscarNodo(name2);
+        if (pOrigen == null || pDestino == null) {
+            return 0;
+        }
+        LinkedList<Nodo> L1 = new LinkedList<>();
+        L1.add(pOrigen);
+        return cantidadCaminos(L1, pOrigen, pDestino);
+    }
+
+    public int cantidadCaminos(LinkedList<Nodo> L1, Nodo pOrigen, Nodo pDestino) {
+        if (seEncuentra(L1, pOrigen)) {
+            return 0;
+        }
+        if (pOrigen == pDestino) {
+            return 1;
+        }
+
+        int caminos = 0;
+        Arco p = pOrigen.primA;
+        while (p != null) {
+            L1.add(p.pDestino);
+            caminos += cantidadCaminos(L1, p.pDestino, pDestino);
+            L1.removeLast();
+            p = p.prox;
+        }
+
+        return caminos;
+    }
+
+    public void mostrarTotalCamino(String name1, String name2) {
+        Nodo pOrigen = buscarNodo(name1);
+        Nodo pDestino = buscarNodo(name2);
+        if (pOrigen == null || pDestino == null) {
+            return;
+        }
+        LinkedList<Nodo> L1 = new LinkedList<>();
+        L1.add(pOrigen);
+        mostrarTotalCamino(L1, pOrigen, pDestino, 0);
+    }
+
+    public void mostrarTotalCamino(LinkedList<Nodo> L1, Nodo pOrigen, Nodo pDestino, int costoTotal) {
+        if (seEncuentra(L1, pOrigen)) {
+            return;
+        }
+        if (pOrigen == pDestino) {
+            System.out.println(L1 + " (Costo total: " + costoTotal + ")");
+            return;
+        }
+
+        Arco p = pOrigen.primA;
+        while (p != null) {
+            L1.add(p.pDestino);
+            mostrarTotalCamino(L1, p.pDestino, pDestino, costoTotal + p.valor); // Sumamos el peso del arco al costo total
+            L1.removeLast();
+            p = p.prox;
+        }
+    }
+
+    //------------------------------
+    //-------------------------
+    public boolean seEncuentra(LinkedList<Nodo> L1, Nodo p) {
+        for (int i = 0; i < L1.size() - 1; i++) {
+            if (L1.get(i) == p) {
+                return true;
+            }
+        }
+        return false;
+    }
+    //---------------------------------
+    //------------------------------------
+
+    
+    public void mostrarCantidadNodosPorCamino(String name1, String name2) {
+        Nodo pOrigen = buscarNodo(name1);
+        Nodo pDestino = buscarNodo(name2);
+        if (pOrigen == null || pDestino == null) {
+            return;
+        }
+        LinkedList<Nodo> L1 = new LinkedList<>();
+        L1.add(pOrigen);
+        mostrarCantidadNodosPorCamino(L1, pOrigen, pDestino);
+    }
+
+    public void mostrarCantidadNodosPorCamino(LinkedList<Nodo> L1, Nodo pOrigen, Nodo pDestino) {
+        if (seEncuentra(L1, pOrigen)) { // En caso de que exista un ciclo en el grafo
+            return;
+        }
+        if (pOrigen == pDestino) { // En caso de que lleguemos al destino
+            System.out.println("[" + L1.size() + "]"); // Contamos el número total de nodos en el camino
+            return;
+        }
+        Arco p = pOrigen.primA;
+        while (p != null) {
+            L1.add(p.pDestino);
+            mostrarCantidadNodosPorCamino(L1, p.pDestino, pDestino);
+            L1.removeLast();
+            p = p.prox;
+        }
+    }
+
+    public int sumarCantidadNodosPorCamino(String name1, String name2) {
+        Nodo pOrigen = buscarNodo(name1);
+        Nodo pDestino = buscarNodo(name2);
+        if (pOrigen == null || pDestino == null) {
+            return 0;
+        }
+        LinkedList<Nodo> L1 = new LinkedList<>();
+        L1.add(pOrigen);
+        return sumarCantidadNodosPorCamino(L1, pOrigen, pDestino);
+    }
+
+    public int sumarCantidadNodosPorCamino(LinkedList<Nodo> L1, Nodo pOrigen, Nodo pDestino) {
+        if (seEncuentra(L1, pOrigen)) { 
+            return 0;
+        }
+        if (pOrigen == pDestino) { 
+            return L1.size();
+        }
+        int totalNodos = 0;
+        Arco p = pOrigen.primA;
+        while (p != null) {
+            L1.add(p.pDestino);
+            totalNodos += sumarCantidadNodosPorCamino(L1, p.pDestino, pDestino);
+            L1.removeLast();
+            p = p.prox;
+        }
+        return totalNodos;
+    }
+
+    
+}
+
+/********************************  M  A  I  N  *************************************/
+public class Main {
+
+    public static void main(String[] args) {
+
+//        //Se crea el Objeto
+        Grafo g1 = new Grafo();
+              
+        g1.insertarNodo("A");
+        g1.insertarNodo("B");
+        g1.insertarNodo("C");
+        g1.insertarNodo("D");
+        g1.insertarNodo("E");
+//        
+        g1.insertarArco("A", "B", 1);
+        g1.insertarArco("A", "C", 2);
+        g1.insertarArco("B", "C", 2);
+        g1.insertarArco("A", "D", 3);
+        g1.insertarArco("D", "C", 4);
+        g1.insertarArco("A", "E", 1);
+        g1.insertarArco("C", "E", 6);
+        g1.insertarArco("E", "B", 1);
+
+
+        g1.mostrarGrafo();
+        System.out.println("Obtener el mayor del mayor valor de los Arcos: "+g1.mayorValorArco());
+        System.out.println("Obtener el menor valor de los arcos: " + g1.menorValorArco());
+        System.out.println("Cantidad de Nodos: " + g1.obtenerCantidadNodo());
+        
+        System.out.println("Cantidad de Arcos: " + g1.obtenerCantidadArco());
+        
+        
+
+
+        
+        
+//        g1.mostrarCamino("A", "E");
+
+//        System.out.println(g1.cantidadCaminos("A", "E"));
+//        
+//        g1.mostrarTotalCamino("A", "E");
+
+
+//        g1.mostrarCantidadNodosPorCamino("A", "E");
+
+
+//        System.out.println(g1.sumarCantidadNodosPorCamino("A", "E"));
+    }
+}
